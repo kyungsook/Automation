@@ -7,6 +7,7 @@ for ( int i = 0; i <= n; i++ ) {
 e1:
 answer
 input[i]
+1 + e1
 
 e2:
 >

@@ -1,7 +1,8 @@
 import re
 import copy
+import sys
 
-CODE = 0
+CODE = 0        # when stage == CODE, main expression e0 is being parsed
 STRING = 1
 EXPRESSION = 2
 ANDED = 3
@@ -19,13 +20,28 @@ def read_file(filename):
 
     line = fp.readline()
 
-    while line:
+    while line:        
+        # remove comments that begin with "//"
+        comment_index = line.find('//')        
+        if comment_index >= 0:
+            line = line[:comment_index]
+        line = line.strip() + '\n'
+        
+        #print("[" + line + "]")
+        
+        #if len(line) > 0:        
         if p_d.fullmatch(line):         # definition (ex: "e1: ")
             stage = expressionNum(line)
             eCurrent = Expression()
             expressions[expressionName(line)] = eCurrent
 
-        elif stage == CODE:             # code sketch split
+        elif stage == CODE:             # code sketch split for e0
+            parseCode(line, eCurrent)
+
+        elif line != '\n' and eCurrent == None: # e0 begins without "e0:"
+            stage = CODE
+            eCurrent = Expression()
+            expressions['e0'] = eCurrent
             parseCode(line, eCurrent)
 
         elif line != '\n':              # ORED expressions split
@@ -56,23 +72,26 @@ class Expression:
         elif self.EXP:
             return self.EXP
 
-        elif self.AND:
+        elif self.AND:            
             total = ''
-            for a in self.AND:
+            for a in self.AND:                
                 total += (a.toString() + ' ')
-            print(total)
+            return total[:-1]       # return except the last ' '
+            #print(total)
 
-        elif self.OR:
-            for o in self.OR:
-                print(o.toString())
-
+        elif self.OR:            
+            total = ''
+            for o in self.OR:                
+                total += o.toString() + '\n'
+                #print(o.toString())
+            return total[:-1]       # return except the last '\n'
 
 def parseCode(line, cursor):        # codeSketch 파싱하기. expression 파싱이랑 합쳐보기
     code = ''
     tokens = line.split()
 
     cursor.type = ANDED
-    for token in tokens:
+    for token in tokens:        
         if p.fullmatch(token):  # recursive한 경우 (ex: 1 + e1)
             if len(code) != 0:
                 cursor.AND.append(Expression(expressionString=code))
@@ -82,10 +101,10 @@ def parseCode(line, cursor):        # codeSketch 파싱하기. expression 파싱
             cursor.size += 1
             code = ''
 
-        elif not code:
+        elif not code:          # code is empty
             code += token
 
-        else:
+        else:                   # code is not empty
             code += (' ' + token)
 
     if len(code) != 0:  # 그렇지 않은 경우 (ex: input[i])
@@ -93,7 +112,7 @@ def parseCode(line, cursor):        # codeSketch 파싱하기. expression 파싱
         cursor.size += 1
 
 
-def parseAdd(line, cursor):
+def parseAdd(line, cursor):         # parse sub-expressions (those except e0)
     code = ''
     tokens = line.split()
 
@@ -130,11 +149,11 @@ def parseAdd(line, cursor):
 
 
 def expressionNum(line):        # eN일 경우 N return
-    return int(line[1:-2])
+    return int(line[1:-2])      # remove heading "e" and trailing ":\n"
 
 
 def expressionName(line):
-    return line[:-2]
+    return line[:-2]            # remove trailing ":\n"
 
 
 def isExpression(token):
@@ -158,7 +177,37 @@ def makeTree(depthMax=None):
     return cursor
 
 
-def copyExpression(e):
+def copyExpression(e):          # create a shallow copy, where expression IDs remain as they are
     temp = copy.deepcopy(e)
     return temp
 
+
+def deepcopyExpression(e, depth, depthMax=None):      # create a deep copy, where expression IDs are replaced with expression objects    
+    if depthMax != None and depth > depthMax:
+        return None    
+    elif e.type == STRING:
+        return e
+    elif e.type == EXPRESSION:
+        return deepcopyExpression(expressions[e.EXP], depth, depthMax)
+    elif e.type == ANDED:
+        cursor = Expression()
+        cursor.type = ANDED
+        for esub in e.AND:
+            temp = deepcopyExpression(esub, depth+1, depthMax)
+            if (temp == None):
+                return None     # if any one term is nullified in ANDed expression, then entire ANDed expression is nullified
+            cursor.AND.append(temp)
+            cursor.size += 1
+        return cursor
+    elif e.type == ORED:
+        cursor = Expression()
+        cursor.type = ORED
+        for esub in e.OR:
+            temp = deepcopyExpression(esub, depth+1, depthMax)
+            if (temp != None):  # if one term is nullified in ORed expression, that this term is trashed, while others remain
+                cursor.OR.append(temp)
+                cursor.size += 1
+        if cursor.size > 0:
+            return cursor
+        else:
+            return None
