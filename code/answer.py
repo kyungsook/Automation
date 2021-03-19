@@ -5,8 +5,12 @@ def read_file(filename):
     index = 0
     line = fp.readline().rstrip('\n')       # 개행문자 제거
 
-    while line:
+    while line:                             # 비어있는 줄에서 파싱 중단
         line = line.split(' ')              # 공백 기준으로 파싱
+
+        if len(line) == 1 and type(line[0]) == str and line[0].lower() == '\\null':
+            line = []                       # \null은 값이 없는 경우로 처리
+        
         line = list(map(int, line))         # 문자열을 정수로 바꿈
 
         if index % 2 == 0:

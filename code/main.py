@@ -22,13 +22,17 @@ if __name__ == '__main__':
         print(expressions[i].toString())
         print()
      
-    #tree = command.makeTree()                   # make tree structure
+    tree = command.deepcopyExpression(expressions['e0'], 0, 10) # make tree
+    #print(tree.toString())
 
-    tree = command.deepcopyExpression(expressions['e0'], 0, 10)
-    print(tree.toString())
-
+    code = command.generateNextDistinctCode(tree)
+    while code != None:
+        print(code)
+        code = command.generateNextDistinctCode(tree)
+    print("A total of ", command.distinctCodeCount, " distinct codes found")
+        
+    sys.exit(0)
     
-
     #var_list = command.parse(file_list)
     #result = command.classification(var_list)
     #command.print_file(result)

@@ -20,36 +20,67 @@ public class Command4 {
 }
 
 e1:
-e2 // 출력이 하나인 경우
-e3 // 출력이 여럿인 경우
+e2 // single output
+e3 // multiple outputs
 
-e2: // 출력이 하나인 경우
-e21 // 입력 중 조건에 맞는 값 하나 탐색
-e22 // 입력을 조합해 결과 생성
 
-e21: // 입력 중 조건에 맞는 값 하나 탐색
-answers.add(input[0]); for(int i=0;i<input.length;i++) { if ( e10 e11 e12 ) answers.set(0, input[i]); } 
+e2: // single output
+e21 // output = one element among inputs
+e22 // output = f(inputs), e.g., add even #s
 
-e22: // 입력을 조합하여 결과 생성
-answers.add(0); for(int i=0;i<input.length;i++) { if ( e10 e11 e12 ) answers.set(0, answers.get(0) + input[i]); } 
+e21: // output = one element among inputs
+answers.add(input[0]); for(int i=0;i<input.length;i++) { if ( e200 ) answers.set(0, input[i]); } 
 
-e3: // 출력이 여럿인 경우 - 입력 중 조건에 맞는 모든 값 탐색
-for(int i=0;i<input.length;i++) { if ( e10 e11 e12 ) answers.add(input[i]); }
+e22: // output = f(inputs)
+answers.add(0); for(int i=0;i<input.length;i++) { if ( e200 ) answers.set(0, e221 ); } 
 
-e10:
-input[i]		// 입력값 그대로 비교하는 경우
-input[i] % e50	// 입력값을 변형해 비교하는 경우
+e221: // manipualte one output
+answers.get(0) + input[i]	// sum all inputs that meet specified condition
+answers.get(0) + 1	// count # of times event occurred
+answers.get(0) | 1	// determine whether event occurred (1) or not (0)
 
-e11:
+e200:
+true
+e101 e102 e103
+
+
+e3: // multiple outputs
+e31
+e32
+
+e31: // multiple outputs = subset of inputs
+for(int i=0;i<input.length;i++) { if ( e300 ) answers.add(input[i]); }
+
+e32: // output(i) = f(input(i))
+for(int i=0;i<input.length;i++) { if ( e300 ) answers.add( e321 ); else answers.add(input[i]); }
+
+e321: // modify input before storing
+-input[i]
+input[i] + e502
+
+e300:
+true
+e101 e102 e501 // use e501 rather than e103, as answers list could be empty
+
+
+e101:
+input[i]		// use input as it is
+input[i] % e502	// modify input before conditioning
+
+e102:
 >
 ==
 <
 
-e12:
+e103:
 answers.get(0)
-0
+e501
 
-e50: // 자주 사용하는 상수
+
+e501: // constants that are frequently used (include 0)
+0
+e502
+
+e502: // constants that are frequently used (exclude 0)
 2
 3
-5

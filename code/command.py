@@ -64,6 +64,8 @@ class Expression:
         self.EXP = expressionId
         self.AND = list()
         self.OR = list()
+        self.selection = 0
+        self.parent = None
 
     def toString(self):
         if self.STR:
@@ -182,6 +184,7 @@ def copyExpression(e):          # create a shallow copy, where expression IDs re
     return temp
 
 
+selections = list()             # list of ORed expressions in tree, which will be used to generate distinct codes
 def deepcopyExpression(e, depth, depthMax=None):      # create a deep copy, where expression IDs are replaced with expression objects    
     if depthMax != None and depth > depthMax:
         return None    
@@ -196,6 +199,7 @@ def deepcopyExpression(e, depth, depthMax=None):      # create a deep copy, wher
             temp = deepcopyExpression(esub, depth+1, depthMax)
             if (temp == None):
                 return None     # if any one term is nullified in ANDed expression, then entire ANDed expression is nullified
+            temp.parent = cursor
             cursor.AND.append(temp)
             cursor.size += 1
         return cursor
@@ -204,10 +208,54 @@ def deepcopyExpression(e, depth, depthMax=None):      # create a deep copy, wher
         cursor.type = ORED
         for esub in e.OR:
             temp = deepcopyExpression(esub, depth+1, depthMax)
-            if (temp != None):  # if one term is nullified in ORed expression, that this term is trashed, while others remain
+            if (temp != None):  # if one term is nullified in ORed expression, then this term is trashed, while others remain
+                temp.parent = cursor
                 cursor.OR.append(temp)
                 cursor.size += 1
         if cursor.size > 0:
+            selections.append(cursor)            
             return cursor
         else:
             return None
+
+distinctCodeCount = 0    
+def generateNextDistinctCode(e):    # generate next distinct code by incrementing selections
+    global distinctCodeCount
+    if distinctCodeCount == 0:
+        distinctCodeCount += 1
+        return generate(e)
+
+    for i in selections:
+        if not isSelected(i):   # skip this ORed expression if it is not currently selected
+            i.selection = 0
+            continue
+        i.selection += 1
+        if i.selection >= i.size:
+            i.selection = 0
+            continue
+        distinctCodeCount += 1
+        return generate(e)
+
+    return None     # no more code to explore
+
+def generate(e):    # generate code according to current selections for ORed expressions
+    if e.type == STRING:
+        return e.STR
+    elif e.type == ANDED:
+        temp = ""
+        for esub in e.AND:
+            temp += generate(esub) + ' '
+        return temp
+    elif e.type == ORED:
+        #print(e.selection,"/",e.size)
+        return generate(e.OR[e.selection])
+    
+def isSelected(e):  # return whether e and all of its parents are currently selected
+    while e.parent != None:
+        if e.parent.type == ORED and e.parent.OR[e.parent.selection] != e:
+            return False
+        e = e.parent
+
+    return True
+        
+    
