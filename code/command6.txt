@@ -1,0 +1,18 @@
+e0:
+answer=input[0]
+for i in input:
+    if e1 e2 e1 :
+        answer = i
+print(answer)
+
+e1:
+answer
+----
+i
+
+e2:
+>
+----
+==
+----
+<

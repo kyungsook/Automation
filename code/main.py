@@ -21,16 +21,21 @@ if __name__ == '__main__':
         print(str(i)+':')
         print(expressions[i].toString())
         print()
-     
+        
     tree = command.deepcopyExpression(expressions['e0'], 0, 10) # make tree
     #print(tree.toString())
 
     code = command.generateNextDistinctCode(tree)
-    while code != None:
-        print(code)
-        code = command.generateNextDistinctCode(tree)
-    print("A total of ", command.distinctCodeCount, " distinct codes found")
+    while code != None:        
+        result = answer.validateCode(ios, code)
+        if result[1] == 0 and result[0] > 0:
+            print("---- code #", command.distinctCodeCount, "----") 
+            print(code)
+            print()
+        code = command.generateNextDistinctCode(tree)        
         
+    print("A total of ", command.distinctCodeCount, " distinct codes explored")
+      
     sys.exit(0)
     
     #var_list = command.parse(file_list)
