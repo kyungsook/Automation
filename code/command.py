@@ -22,11 +22,11 @@ def read_file(filename):
     line = fp.readline()
 
     while line:        
-        # remove comments that begin with "//"
-        comment_index = line.find('//')        
+        # remove comments that begin with "#"
+        comment_index = line.find('#')        
         if comment_index >= 0:
-            line = line[:comment_index]
-            line = line + '\n'
+            line = line[:comment_index] + '\n'
+        line = line.rstrip() + '\n' # remove trailing whitespaces. heading whitespaces remain since indentation is important in python
         #line = line.strip() + '\n'                
         
         #print("[" + line + "]")
@@ -51,7 +51,7 @@ def read_file(filename):
                 eCurrentAND.type = ANDED
                 eCurrentOR.OR.append(eCurrentAND)
                 eCurrentOR.size += 1
-                expressions[expressionName(line)] = eCurrentOR
+                expressions['e0'] = eCurrentOR
 
             if line.startswith('----'):
                 eCurrentAND = Expression()
@@ -66,6 +66,7 @@ def read_file(filename):
 
     fp.close()
     return expressions
+
 
 class Expression:
     def __init__(self, expressionString=None, expressionId=None, expressionType=STRING):
@@ -99,10 +100,11 @@ class Expression:
         elif self.OR:            
             total = ''
             for o in self.OR[:-1]:                
-                total += o.toString() + '\n\\OR\n'
+                total += o.toString() + '\n----\n'
                 #print(o.toString())
             total += self.OR[-1].toString() + '\n'
             return total[:-1]       # return except the last '\n'
+
 
 def parseCode(line, cursor):        # codeSketch 파싱하기. expression 파싱이랑 합쳐보기
     code = ''
@@ -111,12 +113,17 @@ def parseCode(line, cursor):        # codeSketch 파싱하기. expression 파싱
     cursor.type = ANDED
     for token in tokens:
         #print('[',token,']')
-        if p.fullmatch(token):  # recursive한 경우 (ex: 1 + e1)
+        token_s = token.strip() # last token in a line contains a trailing '\n', so remove it
+        if p.fullmatch(token_s):  # recursive한 경우 (ex: 1 + e1)
+            #print('[',token_s,']')
             if len(code) != 0:
                 cursor.AND.append(Expression(expressionString=code))
                 cursor.size += 1
 
-            cursor.AND.append(Expression(expressionId=token, expressionType=EXPRESSION))
+            cursor.AND.append(Expression(expressionId=token_s, expressionType=EXPRESSION))
+            cursor.size += 1
+            if token[-1] == '\n':
+                cursor.AND.append(Expression(expressionString='\n'))
             cursor.size += 1
             code = ''
 
@@ -136,74 +143,12 @@ def parseCode(line, cursor):        # codeSketch 파싱하기. expression 파싱
         cursor.size += 1
 
 
-def parseAdd(line, cursor):         # parse sub-expressions (those except e0)
-    code = ''
-    tokens = line.split()
-
-    if len(tokens) == 1:
-        if p.fullmatch(tokens[0]):
-            cursor.type = EXPRESSION
-            cursor.EXP = tokens[0]
-
-        else:
-            cursor.type = STRING
-            cursor.STR = tokens[0]
-
-    else:
-        cursor.type = ANDED
-        for token in tokens:
-            if p.fullmatch(token):      # recursive한 경우 (ex: 1 + e1)
-                if len(code) != 0:
-                    cursor.AND.append(Expression(expressionString=code))
-                    cursor.size += 1
-
-                cursor.AND.append(Expression(expressionId=token, expressionType=EXPRESSION))
-                cursor.size += 1
-                code = ''
-
-            elif not code:
-                code += token
-
-            else:
-                code += (' ' + token)
-
-        if len(code) != 0:              # 그렇지 않은 경우 (ex: input[i])
-            cursor.AND.append(Expression(expressionString=code))
-            cursor.size += 1
-
-
 def expressionNum(line):        # eN일 경우 N return
-    return int(line[1:-2])      # remove heading "e" and trailing ":\n"
+    return int(line[1:-2])      # remove heading "e" and trailing ":\n"    
 
 
 def expressionName(line):
-    return line[:-2]            # remove trailing ":\n"
-
-
-def isExpression(token):
-    if p.fullmatch(token):
-        print()
-
-
-def makeTree(depthMax=None):
-    codeSketch = copyExpression(expressions['e0'])
-    cursor = codeSketch
-
-    for e in codeSketch.AND:
-        if e.type == EXPRESSION:
-            for i in expressions[e.EXP].OR:
-                temp = copyExpression(i)
-                e.OR.append(temp)
-
-            e.type = ORED
-            e.EXP = None
-
-    return cursor
-
-
-def copyExpression(e):          # create a shallow copy, where expression IDs remain as they are
-    temp = copy.deepcopy(e)
-    return temp
+    return line[:-2]            # remove trailing ":\n"    
 
 
 selections = list()             # list of ORed expressions in tree, which will be used to generate distinct codes
@@ -240,6 +185,7 @@ def deepcopyExpression(e, depth, depthMax=None):      # create a deep copy, wher
         else:
             return None
 
+
 distinctCodeCount = 0    
 def generateNextDistinctCode(e):    # generate next distinct code by incrementing selections
     global distinctCodeCount
@@ -260,6 +206,7 @@ def generateNextDistinctCode(e):    # generate next distinct code by incrementin
 
     return None     # no more code to explore
 
+
 def generate(e):    # generate code according to current selections for ORed expressions
     if e.type == STRING:
         return e.STR
@@ -274,6 +221,7 @@ def generate(e):    # generate code according to current selections for ORed exp
     elif e.type == ORED:
         #print(e.selection,"/",e.size)
         return generate(e.OR[e.selection])
+
     
 def isSelected(e):  # return whether e and all of its parents are currently selected
     while e.parent != None:

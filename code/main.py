@@ -22,7 +22,7 @@ if __name__ == '__main__':
         print(expressions[i].toString())
         print()
         
-    tree = command.deepcopyExpression(expressions['e0'], 0, 10) # make tree
+    tree = command.deepcopyExpression(expressions['e0'], 0, 20) # make tree
     #print(tree.toString())
 
     code = command.generateNextDistinctCode(tree)
