@@ -1,6 +1,7 @@
 import re
 import copy
 import sys
+import warnings
 
 STRING = 1
 EXPRESSION = 2
@@ -154,6 +155,7 @@ def expressionName(line):
 selections = list()             # list of ORed expressions in tree, which will be used to generate distinct codes
 def deepcopyExpression(e, depth, depthMax=None):      # create a deep copy, where expression IDs are replaced with expression objects    
     if depthMax != None and depth > depthMax:
+        warnings.warn('tree reached its max depth. check to see whether depthMax needs to be increased in deepcopyExpression()')
         return None    
     elif e.type == STRING:
         return e
