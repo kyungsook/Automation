@@ -3,7 +3,6 @@ import io
 
 def read_file(filename):
     fp = open(filename, "r")
-    answer = list()
     ios = IOSamples()
     index = 0
     line = fp.readline().rstrip('\n')       # 개행문자 제거
@@ -59,11 +58,12 @@ class IOSamples:
 def validateCode(ios, code):    
     c = compile(code, '<string>', 'exec')   # compile code to efficiently execute it multiple times
 
-    old_stdout = sys.stdout # redirect stdout to stream of string
+    old_stdout = sys.stdout                 # redirect stdout to stream of string
     sys.stdout = mystdout = io.StringIO()
 
     num_success = 0
     num_failure = 0
+
     for i in range(ios.pair):   # run compiled code for each i/o pair
         exec(c, None, {'input': ios.input[i]})
         output = mystdout.getvalue().split()
@@ -78,10 +78,12 @@ def validateCode(ios, code):
             num_success += 1
         else:
             num_failure += 1
+
+        # 버퍼 비우기...?
         mystdout.seek(0)
         mystdout.truncate(0)
 
-    sys.stdout = old_stdout # redirect stdout back to original
+    sys.stdout = old_stdout     # redirect stdout back to original
 
     #print(mystdout.getvalue())
     #print('s/f:',num_success, num_failure)

@@ -1,5 +1,5 @@
 import argparse
-import answer
+import IOsample
 import command
 import sys
 
@@ -9,10 +9,10 @@ if __name__ == '__main__':
     parser.add_argument('-e', help='file with element included')
     parser.add_argument('-c', help='file with command included', default='command5.txt')
 
-    args = parser.parse_args()    
+    args = parser.parse_args()
     print(args)
     
-    ios = answer.read_file(args.e)	# parse io samples
+    ios = IOsample.read_file(args.e)	# parse io samples
     ios.toString()   
 
     expressions = command.read_file(args.c)     # parse expressions
@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
     code = command.generateNextDistinctCode(tree)
     while code != None:        
-        result = answer.validateCode(ios, code)
+        result = IOsample.validateCode(ios, code)
         if result[0] > 0 and result[1] == 0:
             print("---- code #", command.distinctCodeCount, "----") 
             print(code)
