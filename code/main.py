@@ -7,7 +7,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='get filename')
 
     parser.add_argument('-e', help='file with element included')
-    parser.add_argument('-c', help='file with command included', default='command5.txt')
+    parser.add_argument('-c', help='file with command included', default='command5-highlevel.txt')
 
     args = parser.parse_args()
     print(args)

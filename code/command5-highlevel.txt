@@ -1,0 +1,78 @@
+e0:
+answers = list()
+
+e1
+
+print(*answers)
+
+e1:
+answers.append( e2 )	# single output
+----
+e3	# multiple outputs
+
+e2:	# single output
+e21	# output = one element among inputs
+----
+e22	# output = f(inputs), e.g., add even #s
+
+e21:	# output = one element among inputs
+max(input)
+----
+min(input)
+
+e22:	# output = f(inputs)
+sum( e221 for i in input if e300 )	# add or count all items that meet condition
+----
+any( e300 for i in input )	# determine if any item meets condition (True or False)
+
+e221:
+i		# sum all inputs that meet specified condition
+----
+1		# count # of times event occurred
+
+
+e3:	# multiple outputs
+answers = [ e321 for i in input if e300 ]
+----
+answers = sorted(input, reverse= e700 )
+
+e321:	# what to store
+i
+----
+abs(i)
+----
+-i
+----
+i + e502
+
+e300:	# condition
+True
+----
+e101 e102 e501
+
+e101:
+i		# use input as it is
+----
+i % e502	# modify input before conditioning
+
+e102:
+>
+----
+==
+----
+<
+
+e501:	# constants that are frequently used (include 0)
+0
+----
+e502
+
+e502:	# constants that are frequently used (exclude 0)
+2
+----
+3
+
+e700:	# True or False
+True
+----
+False

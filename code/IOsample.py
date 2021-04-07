@@ -79,9 +79,9 @@ def validateCode(ios, code):
         else:
             num_failure += 1
 
-        # 버퍼 비우기...?
-        mystdout.seek(0)
-        mystdout.truncate(0)
+        # 버퍼 비우기: refer to the comments below.
+        mystdout.seek(0)        # move pointer to beginning of buffer
+        mystdout.truncate(0)    # flush buffer
 
     sys.stdout = old_stdout     # redirect stdout back to original
 

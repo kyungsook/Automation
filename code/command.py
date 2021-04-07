@@ -41,7 +41,10 @@ def read_file(filename):
             eCurrentAND.type = ANDED
             eCurrentOR.OR.append(eCurrentAND)
             eCurrentOR.size += 1
-            expressions[expressionName(line)] = eCurrentOR
+            eName = expressionName(line)
+            if eName in expressions:
+                raise Exception('{} is defined more than once. Each expression must be defined only once.'.format(eName))
+            expressions[eName] = eCurrentOR
 
         elif line != '\n':
             if eCurrentOR == None:  # e0 begins without "e0:"
@@ -160,6 +163,8 @@ def deepcopyExpression(e, depth, depthMax=None):      # create a deep copy, wher
     elif e.type == STRING:
         return e
     elif e.type == EXPRESSION:
+        if e.EXP not in expressions:
+            raise Exception('{} is referred but not defined.'.format(e.EXP))
         return deepcopyExpression(expressions[e.EXP], depth, depthMax)
     elif e.type == ANDED:
         cursor = Expression()
