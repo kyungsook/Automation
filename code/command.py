@@ -128,7 +128,7 @@ def parseCode(line, cursor):        # codeSketch 파싱하기. expression 파싱
             cursor.size += 1
             if token[-1] == '\n':
                 cursor.AND.append(Expression(expressionString='\n'))
-            cursor.size += 1
+                cursor.size += 1
             code = ''
 
         elif not code:          # code is empty
